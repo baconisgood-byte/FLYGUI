@@ -1,70 +1,63 @@
+-- LocalScript inside StarterPlayerScripts or StarterGui
+
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-
 local player = Players.LocalPlayer
-local char = player.Character or player.CharacterAdded:Wait()
-local humanoid = char:WaitForChild("Humanoid")
-local root = char:WaitForChild("HumanoidRootPart")
 
--- Fly state
+-- GUI Setup
+local gui = Instance.new("ScreenGui")
+gui.Name = "FlyGUI"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 100)
+frame.Position = UDim2.new(0.4, 0, 0.4, 0)
+frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+frame.Active = true
+frame.Draggable = true
+frame.Parent = gui
+
+local flyButton = Instance.new("TextButton")
+flyButton.Size = UDim2.new(0, 80, 0, 30)
+flyButton.Position = UDim2.new(0, 10, 0, 10)
+flyButton.Text = "Fly: OFF"
+flyButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+flyButton.TextColor3 = Color3.new(1, 1, 1)
+flyButton.Parent = frame
+
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 30, 0, 30)
+closeButton.Position = UDim2.new(1, -40, 0, 10)
+closeButton.Text = "X"
+closeButton.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
+closeButton.TextColor3 = Color3.new(1, 1, 1)
+closeButton.Parent = frame
+
+-- Fly system
 local flying = false
 local speed = 60
-local vel = Instance.new("LinearVelocity")
-vel.Attachment0 = Instance.new("Attachment", root)
-vel.MaxForce = math.huge
-vel.RelativeTo = Enum.ActuatorRelativeTo.World
+local vel, align
 
-local align = Instance.new("AlignOrientation")
-align.Attachment0 = Instance.new("Attachment", root)
-align.Mode = Enum.OrientationAlignmentMode.OneAttachment
-align.MaxAngularVelocity = math.huge
-align.MaxTorque = math.huge
+local function setupFly(char)
+    local humanoid = char:WaitForChild("Humanoid")
+    local root = char:WaitForChild("HumanoidRootPart")
 
-vel.Parent = root
-align.Parent = root
+    vel = Instance.new("LinearVelocity")
+    vel.Attachment0 = Instance.new("Attachment", root)
+    vel.MaxForce = math.huge
+    vel.RelativeTo = Enum.ActuatorRelativeTo.World
+    vel.Parent = root
 
-local function startFly()
-	flying = true
-	humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-end
+    align = Instance.new("AlignOrientation")
+    align.Attachment0 = Instance.new("Attachment", root)
+    align.Mode = Enum.OrientationAlignmentMode.OneAttachment
+    align.MaxAngularVelocity = math.huge
+    align.MaxTorque = math.huge
+    align.Parent = root
 
-local function stopFly()
-	flying = false
-	vel.VectorVelocity = Vector3.zero
-end
-
-RunService.RenderStepped:Connect(function()
-	if flying then
-		local camCF = workspace.CurrentCamera.CFrame
-		local move = Vector3.zero
-
-		if UIS:IsKeyDown(Enum.KeyCode.W) then
-			move += camCF.LookVector
-		end
-		if UIS:IsKeyDown(Enum.KeyCode.S) then
-			move -= camCF.LookVector
-		end
-		if UIS:IsKeyDown(Enum.KeyCode.A) then
-			move -= camCF.RightVector
-		end
-		if UIS:IsKeyDown(Enum.KeyCode.D) then
-			move += camCF.RightVector
-		end
-
-		align.CFrame = CFrame.lookAt(root.Position, root.Position + camCF.LookVector)
-		vel.VectorVelocity = move.Unit * speed
-	end
-end)
-
--- Example toggle (replace with your button click event)
-UIS.InputBegan:Connect(function(input, gp)
-	if gp then return end
-	if input.KeyCode == Enum.KeyCode.F then
-		if flying then
-			stopFly()
-		else
-			startFly()
-		end
-	end
-end)
+    RunService.RenderStepped:Connect(function()
+        if flying then
+            local camCF = workspace.CurrentCamera.CFrame
+				
