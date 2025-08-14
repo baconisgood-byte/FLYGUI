@@ -1,15 +1,14 @@
--- LocalScript inside StarterPlayerScripts or StarterGui
-
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
 -- GUI Setup
 local gui = Instance.new("ScreenGui")
 gui.Name = "FlyGUI"
 gui.ResetOnSpawn = false
-gui.Parent = player:WaitForChild("PlayerGui")
+gui.Parent = playerGui
 
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 200, 0, 100)
@@ -41,23 +40,5 @@ local speed = 60
 local vel, align
 
 local function setupFly(char)
-    local humanoid = char:WaitForChild("Humanoid")
-    local root = char:WaitForChild("HumanoidRootPart")
-
-    vel = Instance.new("LinearVelocity")
-    vel.Attachment0 = Instance.new("Attachment", root)
-    vel.MaxForce = math.huge
-    vel.RelativeTo = Enum.ActuatorRelativeTo.World
-    vel.Parent = root
-
-    align = Instance.new("AlignOrientation")
-    align.Attachment0 = Instance.new("Attachment", root)
-    align.Mode = Enum.OrientationAlignmentMode.OneAttachment
-    align.MaxAngularVelocity = math.huge
-    align.MaxTorque = math.huge
-    align.Parent = root
-
-    RunService.RenderStepped:Connect(function()
-        if flying then
-            local camCF = workspace.CurrentCamera.CFrame
-				
+    local humanoid = char:WaitForChild("H
+		
