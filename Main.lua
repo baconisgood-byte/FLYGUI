@@ -10,16 +10,27 @@ for _, gui in pairs(playerGui:GetChildren()) do
     end
 end
 
--- Make frame draggable
+-- Make frame draggable (works on PC & Mobile)
 local function makeDraggable(frame, dragHandle)
     local dragging = false
     local dragStart, startPos
 
+    local function update(input)
+        local delta = input.Position - dragStart
+        frame.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+
     dragHandle.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
             dragStart = input.Position
             startPos = frame.Position
+
             input.Changed:Connect(function()
                 if input.UserInputState == Enum.UserInputState.End then
                     dragging = false
@@ -29,9 +40,8 @@ local function makeDraggable(frame, dragHandle)
     end)
 
     dragHandle.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
-            local delta = input.Position - dragStart
-            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and dragging then
+            update(input)
         end
     end)
 end
@@ -40,6 +50,7 @@ end
 local function createAdminGui()
     local adminGui = Instance.new("ScreenGui")
     adminGui.Name = "AdminGui"
+    adminGui.ResetOnSpawn = false
     adminGui.Parent = playerGui
 
     local frame = Instance.new("Frame")
@@ -56,7 +67,7 @@ local function createAdminGui()
     title.TextScaled = true
     title.Parent = frame
 
-    -- X Button (Deletes GUI & script)
+    -- X Button
     local closeBtn = Instance.new("TextButton")
     closeBtn.Size = UDim2.new(0, 40, 0, 40)
     closeBtn.Position = UDim2.new(1, -40, 0, 0)
@@ -68,7 +79,6 @@ local function createAdminGui()
 
     closeBtn.MouseButton1Click:Connect(function()
         adminGui:Destroy()
-        script:Destroy() -- Deletes the running script
     end)
 
     -- Kill Me Button
@@ -88,7 +98,7 @@ local function createAdminGui()
         end
     end)
 
-    -- Fire & Spawn All Button
+    -- Fire & Spawn All Button (works only in exploit/server-side)
     local fireSpawnBtn = Instance.new("TextButton")
     fireSpawnBtn.Size = UDim2.new(0.8, 0, 0, 40)
     fireSpawnBtn.Position = UDim2.new(0.1, 0, 0.55, 0)
@@ -121,6 +131,7 @@ end
 -- Create First GUI
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "MyGui"
+screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
 local frame = Instance.new("Frame")
