@@ -1,12 +1,39 @@
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
+local UserInputService = game:GetService("UserInputService")
 
 -- Remove old GUIs
 for _, gui in pairs(playerGui:GetChildren()) do
     if gui.Name == "MyGui" or gui.Name == "AdminGui" then
         gui:Destroy()
     end
+end
+
+-- Make frame draggable
+local function makeDraggable(frame, dragHandle)
+    local dragging = false
+    local dragStart, startPos
+
+    dragHandle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    dragHandle.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
 end
 
 -- Function to create Admin GUI
@@ -22,12 +49,27 @@ local function createAdminGui()
     frame.Parent = adminGui
 
     local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, 0, 0, 40)
+    title.Size = UDim2.new(1, -40, 0, 40)
     title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     title.Text = "Admin Panel"
     title.TextColor3 = Color3.fromRGB(255, 255, 255)
     title.TextScaled = true
     title.Parent = frame
+
+    -- X Button (Deletes GUI & script)
+    local closeBtn = Instance.new("TextButton")
+    closeBtn.Size = UDim2.new(0, 40, 0, 40)
+    closeBtn.Position = UDim2.new(1, -40, 0, 0)
+    closeBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+    closeBtn.Text = "X"
+    closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeBtn.TextScaled = true
+    closeBtn.Parent = frame
+
+    closeBtn.MouseButton1Click:Connect(function()
+        adminGui:Destroy()
+        script:Destroy() -- Deletes the running script
+    end)
 
     -- Kill Me Button
     local killBtn = Instance.new("TextButton")
@@ -60,13 +102,11 @@ local function createAdminGui()
         for _, plr in pairs(Players:GetPlayers()) do
             if plr.Character then
                 local char = plr.Character
-                -- Add fire effect
                 local fire = Instance.new("Fire")
                 fire.Parent = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
                 fire.Size = 10
                 fire.Heat = 25
 
-                -- Kill to respawn
                 local humanoid = char:FindFirstChild("Humanoid")
                 if humanoid then
                     humanoid.Health = 0
@@ -74,6 +114,8 @@ local function createAdminGui()
             end
         end
     end)
+
+    makeDraggable(frame, title)
 end
 
 -- Create First GUI
